@@ -2,6 +2,7 @@
 "
 " DEPENDENCIES:
 "   - CompleteHelper.vim autoload script
+"   - Complete/Abbreviate.vim autoload script
 "   - Complete/Repeat.vim autoload script
 "
 " Copyright: (C) 2014 Ingo Karkat
@@ -23,20 +24,37 @@ function! LineComplete#LineComplete( findstart, base )
 	    return col('.') - 1
 	else
 	    let l:matches = []
-echomsg '****' '\V\^' . s:indent . escape(s:fullText, '\') . '\n\zs\.\*'
-	    call CompleteHelper#FindMatches(l:matches, '\V\^' . s:indent . escape(s:fullText, '\') . '\zs\n\.\*', {'complete': s:GetCompleteOption()})
+
+	    " Need to translate the embedded ^@ newline into the \n atom.
+	    let l:previousCompleteExpr = substitute(escape(s:fullText, '\'), '\n', '\\n', 'g')
+
+	    " Avoid that the current position is matched, and the line after the
+	    " cursor is returned as a completion candidate. As the pattern is
+	    " applied to multiple buffers, we avoid atoms that directly
+	    " reference the line or a mark, and instead exclude the literal text
+	    " match.
+	    let l:notNextLineExpr = '\%(' . escape(getline(line('.') + 1), '\') . '\n\)\@!'
+
+	    call CompleteHelper#FindMatches(l:matches, '\V\^' . s:indentExpr . l:previousCompleteExpr . '\zs\n' . l:notNextLineExpr . '\.\*', {'complete': s:GetCompleteOption()})
 	    return l:matches
 	endif
     endif
 
     if a:findstart
 	" Locate the start of the alphabetic characters.
-	let s:indent = matchstr(getline('.'), '^\s\+')
-	return len(s:indent) " Return byte index, not column.
+	let s:indentExpr = matchstr(getline('.'), '^\s\+')
+	let l:startCol = len(s:indentExpr) + 1
+	if empty(s:indentExpr)
+	    " When there's no existing indent before the completion base, allow
+	    " arbitrary indent for matching lines.
+	    let s:indentExpr = '\s\*'
+	endif
+
+	return l:startCol - 1 " Return byte index, not column.
     else
-	" Find matches having s:indent and starting with a:base.
+	" Find matches having s:indentExpr and starting with a:base.
 	let l:matches = []
-	call CompleteHelper#FindMatches(l:matches, '\V\^' . s:indent . '\zs' . (empty(a:base) ? '\S\.\*' : escape(a:base, '\') . '\.\+'), {'complete': s:GetCompleteOption()})
+	call CompleteHelper#FindMatches(l:matches, '\V\^' . s:indentExpr . '\zs' . (empty(a:base) ? '\S\.\*' : escape(a:base, '\') . '\.\+'), {'complete': s:GetCompleteOption()})
 	if empty(l:matches) && a:base =~# '\s'
 	    " In case there are no matches, allow arbitrary text between each
 	    " WORD in a:base.
@@ -45,8 +63,10 @@ echomsg '****' '\V\^' . s:indent . escape(s:fullText, '\') . '\n\zs\.\*'
 	    echohl None
 
 	    let l:relaxedBase = substitute(escape(a:base, '\'), '\s\+', '\\%(&\\|\\s\\.\\*\\s\\)', 'g')
-	    call CompleteHelper#FindMatches(l:matches, '\V\^' . s:indent . '\zs' . l:relaxedBase . '\.\+', {'complete': s:GetCompleteOption()})
+	    call CompleteHelper#FindMatches(l:matches, '\V\^' . s:indentExpr . '\zs' . l:relaxedBase . '\.\+', {'complete': s:GetCompleteOption()})
 	endif
+
+	call map(l:matches, 'CompleteHelper#Abbreviate#Word(v:val)')
 	return l:matches
     endif
 endfunction
@@ -56,7 +76,6 @@ function! LineComplete#Expr()
 
     let s:repeatCnt = 0 " Important!
     let [s:repeatCnt, l:addedText, s:fullText] = CompleteHelper#Repeat#TestForRepeat()
-
     return "\<C-x>\<C-u>"
 endfunction
 
