@@ -16,6 +16,8 @@
 function! s:GetCompleteOption()
     return (exists('b:LineComplete_complete') ? b:LineComplete_complete : g:LineComplete_complete)
 endfunction
+let s:save_cpo = &cpo
+set cpo&vim
 
 let s:repeatCnt = 0
 function! LineComplete#LineComplete( findstart, base )
@@ -35,7 +37,10 @@ function! LineComplete#LineComplete( findstart, base )
 	    " match.
 	    let l:notNextLineExpr = '\%(' . escape(getline(line('.') + 1), '\') . '\n\)\@!'
 
-	    call CompleteHelper#FindMatches(l:matches, '\V\^' . s:indentExpr . l:previousCompleteExpr . '\zs\n' . l:notNextLineExpr . '\.\*', {'complete': s:GetCompleteOption()})
+	    call CompleteHelper#FindMatches(l:matches,
+	    \   '\V\^' . s:indentExpr . l:previousCompleteExpr . '\zs\n' . l:notNextLineExpr . '\.\*',
+	    \   {'complete': s:GetCompleteOption()}
+	    \)
 	    return l:matches
 	endif
     endif
@@ -54,7 +59,18 @@ function! LineComplete#LineComplete( findstart, base )
     else
 	" Find matches having s:indentExpr and starting with a:base.
 	let l:matches = []
-	call CompleteHelper#FindMatches(l:matches, '\V\^' . s:indentExpr . '\zs' . (empty(a:base) ? '\S\.\*' : escape(a:base, '\') . '\.\+'), {'complete': s:GetCompleteOption()})
+	call CompleteHelper#FindMatches(l:matches,
+	\   '\V\^' . s:indentExpr . '\zs' . (
+	\       empty(a:base) ?
+	\           '\S\.\*' :
+	\           '\%(' .
+	\               escape(a:base, '\') . '\.\+' .
+	\           '\|' .
+	\               '\%(\S\.\*\s\)' . escape(a:base, '\') . '\.\*' .
+	\           '\)'
+	\       ),
+	\   {'complete': s:GetCompleteOption()}
+	\)
 	if empty(l:matches) && a:base =~# '\s'
 	    " In case there are no matches, allow arbitrary text between each
 	    " WORD in a:base.
@@ -63,7 +79,10 @@ function! LineComplete#LineComplete( findstart, base )
 	    echohl None
 
 	    let l:relaxedBase = substitute(escape(a:base, '\'), '\s\+', '\\%(&\\|\\s\\.\\*\\s\\)', 'g')
-	    call CompleteHelper#FindMatches(l:matches, '\V\^' . s:indentExpr . '\zs' . l:relaxedBase . '\.\+', {'complete': s:GetCompleteOption()})
+	    call CompleteHelper#FindMatches(l:matches,
+	    \   '\V\^' . s:indentExpr . '\zs\%(\S\.\*\s\)\?' . l:relaxedBase . '\.\+',
+	    \   {'complete': s:GetCompleteOption()}
+	    \)
 	endif
 
 	call map(l:matches, 'CompleteHelper#Abbreviate#Word(v:val)')
@@ -79,4 +98,6 @@ function! LineComplete#Expr()
     return "\<C-x>\<C-u>"
 endfunction
 
+let &cpo = s:save_cpo
+unlet s:save_cpo
 " vim: set ts=8 sts=4 sw=4 noexpandtab ff=unix fdm=syntax :
