@@ -75,13 +75,25 @@ function! LineComplete#LineComplete( findstart, base )
 	    " In case there are no matches, allow arbitrary text between each
 	    " WORD in a:base.
 	    echohl ModeMsg
-	    echo '-- User defined completion (^U^N^P) -- Relaxed search...'
+	    echo '-- User defined completion (^U^N^P) -- Non-contiguous search...'
 	    echohl None
 
 	    let l:relaxedBase = substitute(escape(a:base, '\'), '\s\+', '\\%(&\\|\\s\\.\\*\\s\\)', 'g')
 	    call CompleteHelper#FindMatches(l:matches,
 	    \   '\V\^' . s:indentExpr . '\zs\%(\S\.\*\s\)\?' . l:relaxedBase . '\.\+',
 	    \   {'complete': s:GetCompleteOption()}
+	    \)
+	endif
+
+	if empty(l:matches)
+	    echohl ModeMsg
+	    echo '-- User defined completion (^U^N^P) -- Anywhere search...'
+	    echohl None
+
+	    let l:relaxedBase = substitute(escape(a:base, '\'), '\s\+', '\\.\\+', 'g')
+	    call CompleteHelper#FindMatches(l:matches,
+		\ '\V\^' . s:indentExpr . '\zs\%(\S\.\*\)\?' . l:relaxedBase . '\.\+',
+		\ {'complete': s:GetCompleteOption()}
 	    \)
 	endif
 
