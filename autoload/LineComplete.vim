@@ -11,6 +11,10 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.00.002	03-Apr-2014	FIX: For the fallbacks, don't require a match
+"				after the relaxed base. Otherwise, the last base
+"				WORD cannot be matched as the last WORD of a
+"				line.
 "	001	31-Mar-2014	file creation
 
 function! s:GetCompleteOption()
@@ -80,7 +84,7 @@ function! LineComplete#LineComplete( findstart, base )
 
 	    let l:relaxedBase = substitute(escape(a:base, '\'), '\s\+', '\\%(&\\|\\s\\.\\*\\s\\)', 'g')
 	    call CompleteHelper#FindMatches(l:matches,
-	    \   '\V\^' . s:indentExpr . '\zs\%(\S\.\*\s\)\?' . l:relaxedBase . '\.\+',
+	    \   '\V\^' . s:indentExpr . '\zs\%(\S\.\*\s\)\?' . l:relaxedBase . '\.\*',
 	    \   {'complete': s:GetCompleteOption()}
 	    \)
 	endif
@@ -92,7 +96,7 @@ function! LineComplete#LineComplete( findstart, base )
 
 	    let l:relaxedBase = substitute(escape(a:base, '\'), '\s\+', '\\.\\+', 'g')
 	    call CompleteHelper#FindMatches(l:matches,
-		\ '\V\^' . s:indentExpr . '\zs\%(\S\.\*\)\?' . l:relaxedBase . '\.\+',
+		\ '\V\^' . s:indentExpr . '\zs\%(\S\.\*\)\?' . l:relaxedBase . '\.\*',
 		\ {'complete': s:GetCompleteOption()}
 	    \)
 	endif
