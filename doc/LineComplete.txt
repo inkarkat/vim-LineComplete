@@ -74,7 +74,8 @@ To uninstall, use the |:RmVimball| command.
 DEPENDENCIES					   *LineComplete-dependencies*
 
 - Requires Vim 7.0 or higher.
-- Requires the |CompleteHelper.vim| plugin (vimscript #3914).
+- Requires the |CompleteHelper.vim| plugin (vimscript #3914), version 1.50 or
+  higher.
 
 ==============================================================================
 CONFIGURATION					  *LineComplete-configuration*
@@ -104,6 +105,10 @@ IDEAS							  *LineComplete-ideas*
 
 ==============================================================================
 HISTORY							*LineComplete-history*
+
+1.01	RELEASEME
+- Use a:options.abbreviate instead of explicit abbreviation loop. *** You need
+  to update to CompleteHelper.vim (vimscript #3914) version 1.50! ***
 
 1.00	04-Apr-2014
 First published version.
