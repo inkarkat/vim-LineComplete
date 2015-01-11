@@ -11,6 +11,8 @@
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.01.003	18-Dec-2014	Use a:options.abbreviate instead of explicit
+"				abbreviation loop.
 "   1.00.002	03-Apr-2014	FIX: For the fallbacks, don't require a match
 "				after the relaxed base. Otherwise, the last base
 "				WORD cannot be matched as the last WORD of a
@@ -43,7 +45,7 @@ function! LineComplete#LineComplete( findstart, base )
 
 	    call CompleteHelper#FindMatches(l:matches,
 	    \   '\V\^' . s:indentExpr . l:previousCompleteExpr . '\zs\n' . l:notNextLineExpr . '\.\*',
-	    \   {'complete': s:GetCompleteOption()}
+	    \   {'complete': s:GetCompleteOption(), 'abbreviate': 1}
 	    \)
 	    return l:matches
 	endif
@@ -73,7 +75,7 @@ function! LineComplete#LineComplete( findstart, base )
 	\               '\%(\S\.\*\s\)' . escape(a:base, '\') . '\.\*' .
 	\           '\)'
 	\       ),
-	\   {'complete': s:GetCompleteOption()}
+	\   {'complete': s:GetCompleteOption(), 'abbreviate': 1}
 	\)
 	if empty(l:matches) && a:base =~# '\s'
 	    " In case there are no matches, allow arbitrary text between each
@@ -85,7 +87,7 @@ function! LineComplete#LineComplete( findstart, base )
 	    let l:relaxedBase = substitute(escape(a:base, '\'), '\s\+', '\\%(&\\|\\s\\.\\*\\s\\)', 'g')
 	    call CompleteHelper#FindMatches(l:matches,
 	    \   '\V\^' . s:indentExpr . '\zs\%(\S\.\*\s\)\?' . l:relaxedBase . '\.\*',
-	    \   {'complete': s:GetCompleteOption()}
+	    \   {'complete': s:GetCompleteOption(), 'abbreviate': 1}
 	    \)
 	endif
 
@@ -97,11 +99,9 @@ function! LineComplete#LineComplete( findstart, base )
 	    let l:relaxedBase = substitute(escape(a:base, '\'), '\s\+', '\\.\\+', 'g')
 	    call CompleteHelper#FindMatches(l:matches,
 		\ '\V\^' . s:indentExpr . '\zs\%(\S\.\*\)\?' . l:relaxedBase . '\.\*',
-		\ {'complete': s:GetCompleteOption()}
+		\ {'complete': s:GetCompleteOption(), 'abbreviate': 1}
 	    \)
 	endif
-
-	call map(l:matches, 'CompleteHelper#Abbreviate#Word(v:val)')
 	return l:matches
     endif
 endfunction
