@@ -1,0 +1,25 @@
+function Foo()
+    if blah " First check.
+	echo "blah"
+    endif
+    if foo  " Level 1
+	if bar " Level 2.1
+	    echo "foobar"
+	endif
+	if foo " Level 2.2
+	    echo "nono"
+	endif
+        if foo " Level 2.3, spaced!
+	endif
+    endif
+endfunction
+    The quick brown fox jumps
+	over the very-lazy dog.
+    The fast brown red fox drags
+	a very-fat goose for lunch-late tagging.
+    The quick hare watches
+	as the very-large dog-house tags along.
+The quickest way to happiness
+	is by watching foxes and hares.
+A quick,quack,quuck!
+---
