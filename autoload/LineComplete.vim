@@ -4,13 +4,17 @@
 "   - CompleteHelper.vim autoload script
 "   - Complete/Abbreviate.vim autoload script
 "   - Complete/Repeat.vim autoload script
+"   - ingo/plugin/setting.vim autoload script
 "
-" Copyright: (C) 2014 Ingo Karkat
+" Copyright: (C) 2014-2015 Ingo Karkat
 "   The VIM LICENSE applies to this script; see ':help copyright'.
 "
 " Maintainer:	Ingo Karkat <ingo@karkat.de>
 "
 " REVISION	DATE		REMARKS
+"   1.01.004	12-Jan-2015	Remove default g:LineComplete_complete
+"				configuration and default to 'complete' option
+"				value instead.
 "   1.01.003	18-Dec-2014	Use a:options.abbreviate instead of explicit
 "				abbreviation loop.
 "   1.00.002	03-Apr-2014	FIX: For the fallbacks, don't require a match
@@ -20,7 +24,7 @@
 "	001	31-Mar-2014	file creation
 
 function! s:GetCompleteOption()
-    return (exists('b:LineComplete_complete') ? b:LineComplete_complete : g:LineComplete_complete)
+    return ingo#plugin#setting#GetBufferLocal('LineComplete_complete', &complete)
 endfunction
 let s:save_cpo = &cpo
 set cpo&vim
