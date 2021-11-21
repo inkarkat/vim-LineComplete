@@ -1,0 +1,3 @@
+autoload/LineComplete.vim
+plugin/LineComplete.vim
+doc/LineComplete.txt
