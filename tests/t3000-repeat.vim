@@ -1,6 +1,6 @@
 " Test repeat of line completion.
 
-source ../helpers/insert.vim
+runtime tests/helpers/insert.vim
 view LineComplete.txt
 new
 
